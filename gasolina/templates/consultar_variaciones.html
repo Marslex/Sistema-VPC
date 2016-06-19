@@ -1,0 +1,319 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+  <meta charset="utf-8">
+  <meta name="description" content="Analisis de sensibilidad - Tarea HDP Grupo 17 Teorico 2">
+  <meta name="author" content="Omar Garcia">
+  <meta name="keyword" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consultar Variaciones</title>
+
+  <!-- start: Css -->
+  <link rel="stylesheet"  href="{% static 'asset/css/bootstrap.min.css' %}">
+
+  <!-- plugins -->
+  <link rel="stylesheet"  href="{% static 'asset/css/plugins/font-awesome.min.css' %}">
+  <link rel="stylesheet"  href="{% static 'asset/css/plugins/simple-line-icons.css' %}">
+  <link rel="stylesheet"  href="{% static 'asset/css/plugins/select2.min.css' %}">
+  <link rel="stylesheet"  href="{% static 'asset/css/plugins/animate.min.css' %}">
+  <link rel="stylesheet"  href="{% static 'asset/css/plugins/icheck/skins/flat/aero.css' %}">
+  <link rel="stylesheet"  href="{% static 'asset/css/style.css' %}">
+  <!-- end: Css -->
+  <link rel="shortcut icon" type="image/x-icon" href="{% static 'asset/img/logotipo.png' %}">
+</head>
+
+    <body id="mimin" class="dashboard">
+      <!-- start: Header -->
+      <nav class="navbar navbar-default header navbar-fixed-top">
+        <div class="col-md-12 nav-wrapper">
+          <div class="navbar-header" style="width:100%;">
+            <div class="opener-left-menu is-open">
+              <span class="top"></span>
+              <span class="middle"></span>
+              <span class="bottom"></span>
+            </div>
+              <a href="index.html" class="navbar-brand">
+               <b>VPC - Variación del precio de los combustibles</b>
+              </a>
+
+            <ul class="nav navbar-nav navbar-right user-nav">
+              <li class="user-name"><span>Omar Garcia</span></li>
+              <li class="dropdown avatar-dropdown">
+                <img src="{% static 'asset/img/avatar.jpg' %}" class="img-circle avatar" alt="user name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"/>
+                <ul class="dropdown-menu user-dropdown">
+                    <li><a href="/logout/"><span class="fa fa-power-off "></span></a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      <!-- end: Header -->
+
+
+      <div class="container-fluid mimin-wrapper">
+
+        <!-- start:Left Menu -->
+        <div id="left-menu">
+          <div class="sub-left-menu">
+            <ul class="nav nav-list">
+              <li>
+                <div class="col-md-12"><br><img src="{% static 'img/logotipo.png' %}" class="img-responsive" alt="user name"  aria-haspopup="true" aria-expanded="true"/>
+                </div>
+              </li>
+              <li class="time">
+                <h1 class="animated fadeInLeft">21:00</h1>
+                <p class="animated fadeInRight">Sat,October 1st 2029</p>
+              </li>
+              <div class="col-md-12">
+            <a href="/consultar_variaciones/"><span class="icon-chart fa"></span> Consultar Varciaciones</a><br>
+              </div>
+              <div class="col-md-12">
+            <a href="/analisis/"><span class="icon-eye fa"></span> Analisis de Sensibilidad</a><br>
+              </div>
+              <div class="col-md-12">
+            <a href="/datos_masivos/"><span class="icon-cloud-upload fa"></span> Ingresar Datos Masivos</a><br>
+              </div>
+              <div class="col-md-12">
+            <a href="/dato_indiv/"><span class="icon-cloud-upload fa"></span> Ingresar Dato Individual</a>
+              </div>
+            </ul>
+          </div>
+        </div>
+        <!-- end: Left Menu -->
+        <!-- start: Contenido pagina -->
+        <div id="content">
+          <div class="panel box-shadow-none content-header">
+              <div class="panel-body">
+                <div class="col-md-12">
+                  <h3 class="animated fadeInLeft">Consultar Variaciones</h3>
+
+                </div>
+              </div>
+          </div>
+          <!-- start: Formulario -->
+          <div class="form-element">
+            <div class="col-md-12 padding-0">
+              <div class="col-md-12">
+                <div class="panel form-element-padding panel-default">
+                  <div class="panel-heading">
+                    <h4>Precio de los combustibles</h4>
+                    {% if mensajeError %}
+                    <p style="color: #ee0700"><b>{{ mensajeError }}</b></p>
+                  {% endif %}
+                    {% if mensajeExito %}
+                     <p style="color: #00da5b"><b>{{ mensajeExito }}</b></p>
+                  {% endif %}
+                  </div>
+                  <!-- start: Cuerpo del panel -->
+                  <form action="/consultar_variaciones/" method="POST">
+                  {% csrf_token %}
+                    <div class="panel-body" style="padding-bottom:30px;">
+                    <div class="col-md-12">
+                      <div class="form-group col-md-6">
+                        <label class="col-md-4 control-label text-right" for="producto">Seleccione un año</label>
+                        <div class="col-md-8">
+                        <select class="select2-A" style="width: 150px;" name="anho">
+                          <option value="0" selected="selected">Seleccione un año</option>
+                          {% for anho in anho_list %}
+                            <option value="{{ anho.idAno }}">{{ anho.ano }}</option>
+                          {% endfor %}
+                        </select>
+                        </div>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label class="col-md-4 control-label text-right" for="producto">Seleccione un departamento</label>
+                        <div class="col-md-8">
+                          <select class="select2-B" style="width: 200px;" name="departamento">
+                            <option value="0" selected="selected">Seleccione un departamento</option>
+                            {% for departamento in departamento_list %}
+                              <option value="{{ departamento.idDepartamento }}">{{ departamento.departamento }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label class="col-md-4 control-label text-right" for="producto">Seleccione un Producto</label>
+                        <div class="col-md-8">
+                          <select class="select2-C" style="width: 175px;" name="producto">
+                            <option value="0" selected="selected">Seleccione un producto</option>
+                            {% for producto in producto_list %}
+                              <option value="{{ producto.idProducto }}">{{ producto.producto }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-12" style="margin-top:5px; text-align:center">
+                        <button class="btn ripple-infinite btn-gradient btn-info">
+                          <div>
+                            <span>Aceptar</span>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                    </div>
+                  </form>
+                  <!-- end: Cuerpo de panel -->
+                </div>
+              </div>
+            </div>
+            <!-- end: Formulario -->
+            <h3>DEPARTAMENTO VS PRECIO</h3><img src="{% static 'img/chart.png' %}" />
+            <h3>AÑO VS PRECIO</h3><img src="{% static 'img/chart2.png' %}" />
+          <!-- start: tabla -->
+          <div class="col-md-12 top-20 padding-0">
+            <div class="col-md-12">
+              <div class="panel">
+                <div class="panel-heading"><h3>Datos</h3></div>
+                <div class="panel-body">
+                  <div class="responsive-table">
+                    {% if precioCombustible_list %}
+                    <table id="datatables-example" class="table table-striped table-bordered" width="100%" cellspacing="0">
+                      <thead>
+                        <tr>
+                          <th>Producto</th>
+                          <th>Año</th>
+                          <th>Periodo</th>
+                          <th>Departamento</th>
+                          <th>Precio</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for precioCombustible in precioCombustible_list %}
+                        <tr>
+                          <td>{{ precioCombustible.idProducto.producto }}</td>
+                          <td>{{ precioCombustible.idAno.ano }}</td>
+                          <td>{{ precioCombustible.idMes.inicioPeriodo }} - {{ precioCombustible.idMes.finalPeriodo }}</td>
+                          <td>
+                            {% for departamento in departamento_list %}
+                              {% if departamento.idZona.idZona == precioCombustible.idZona.idZona %}
+                                {{ departamento.departamento }}<br>
+                              {% endif %}
+                            {% endfor %}
+                          </td>
+                          <td>{{ precioCombustible.precioCombustible }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                    {% endif %}
+                    {% if auxiliar_list %}
+                    <table id="datatables-example" class="table table-striped table-bordered" width="100%" cellspacing="0">
+                      <thead>
+                        <tr>
+                          <th>Producto</th>
+                          <th>Año</th>
+                          <th>Periodo</th>
+                          <th>Departamento</th>
+                          <th>Precio</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for precioCombustible in auxiliar_list %}
+                        <tr>
+                          <td>{{ precioCombustible.idProducto.producto }}</td>
+                          <td>{{ precioCombustible.idAno.ano }}</td>
+                          <td>{{ precioCombustible.idMes.inicioPeriodo }} - {{ precioCombustible.idMes.finalPeriodo }}</td>
+                          <td>{{ departamento.departamento }}
+                            {% if mensaje %}
+                              {% for departamento in departamento_list %}
+                                {% if departamento.idZona.idZona == precioCombustible.idZona.idZona %}
+                                  {{ departamento.departamento }}<br>
+                                {% endif %}
+                              {% endfor %}
+                            {% endif %}
+                          </td>
+                          <td>{{ precioCombustible.precioCombustible }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                    {% endif %}
+
+
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- end: tabla -->
+        </div>
+        <!-- end: contenido de la pagina -->
+      </div>
+
+      <!-- start: Mobile -->
+      <div id="mimin-mobile" class="reverse">
+        <div class="mimin-mobile-menu-list">
+          <div class="col-md-12 sub-mimin-mobile-menu-list animated fadeInLeft">
+            <ul class="nav nav-list">
+              <li class="active ripple">
+                <a class="tree-toggle nav-header">
+                  <span class="icon-chart fa"></span>Consultar Variaciones
+                </a>
+              </li>
+              <li class="ripple">
+                <a class="tree-toggle nav-header">
+                  <span class="icon-eye fa"></span>Analisis de Sensibilidad
+                </a>
+              </li>
+              <li class="ripple">
+                <a class="tree-toggle nav-header">
+                  <span class="icon-cloud-upload fa"></span>Ingresar Datos Masivos
+                </a>
+              </li>
+              <li class="ripple">
+                <a class="tree-toggle nav-header">
+                  <span class="icon-cloud-upload fa"></span>Ingresar Dato Individual
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <button id="mimin-mobile-menu-opener" class="animated rubberBand btn btn-circle btn-danger">
+        <span class="fa fa-bars"></span>
+      </button>
+      <!-- end: Mobile -->
+
+      <!-- start: Javascript -->
+      <script src={% static 'asset/js/jquery.min.js' %}></script>
+      <script src={% static 'asset/js/jquery.ui.min.js' %}></script>
+      <script src={% static 'asset/js/bootstrap.min.js' %}></script>
+      <script src={% static 'asset/js/plugins/moment.min.js' %}></script>
+      <script src={% static 'asset/js/plugins/icheck.min.js' %}></script>
+      <script src={% static 'asset/js/plugins/jquery.nicescroll.js' %}></script>
+      <script src={% static 'asset/js/plugins/select2.full.min.js' %}></script>
+
+      <!-- custom -->
+      <script src={% static 'asset/js/main.js' %}></script>
+      <script type="text/javascript">
+        $(document).ready(function(){
+              $(".btn-flip").on("click",function(){
+                    $(this).find(".flip").animate().replaceWith("<span class='fa fa-check' style='font-size:2em;'></span>");
+                });
+        });
+
+        $(".select2-A").select2({
+          placeholder: "Seleccione un año",
+          allowClear: false
+        });
+
+        $(".select2-B").select2({
+          placeholder: "Seleccione un departamento",
+          allowClear: false
+        });
+
+        $(".select2-C").select2({
+          placeholder: "Seleccione un producto",
+          allowClear: false
+        });
+        </script>
+
+
+     <!-- end: Javascript -->
+   </body>
+   </html>
