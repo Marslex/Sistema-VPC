@@ -32,12 +32,12 @@
             <span class="middle"></span>
             <span class="bottom"></span>
           </div>
-            <a href="index.html" class="navbar-brand"> 
+            <a href="/consultar_variaciones" class="navbar-brand"> 
              <b>VPC - Variación del precio de los combustibles</b>
             </a>
 
           <ul class="nav navbar-nav navbar-right user-nav">
-            <li class="user-name"><span>Omar Garcia</span></li>
+            <li class="user-name"><span>{{ user.username }}</span></li>
             <li class="dropdown avatar-dropdown">
               <img src="{% static 'asset/img/avatar.jpg' %}" class="img-circle avatar" alt="user name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"/>
               <ul class="dropdown-menu user-dropdown">
@@ -63,17 +63,19 @@
               <p class="animated fadeInRight">Sat,October 1st 2029</p>
             </li>
             <div class="col-md-12">
-          <a href="/consultar_variaciones/"><span class="icon-chart fa"></span> Consultar Varciaciones</a><br>
+          <a href="/consultar_variaciones/"><span class="icon-chart fa"></span> Consultar Variaciones</a><br>
             </div>
             <div class="col-md-12">
           <a href="/analisis/"><span class="icon-eye fa"></span> Analisis de Sensibilidad</a><br>
             </div>
-            <div class="col-md-12">
-          <a href="/datos_masivos/"><span class="icon-cloud-upload fa"></span> Ingresar Datos Masivos</a><br>
-            </div>
-            <div class="col-md-12">
-          <a href="/dato_indiv/"><span class="icon-cloud-upload fa"></span> Ingresar Dato Individual</a>
-            </div>
+            {% if rol.idRol.idRol == 1 %}
+              <div class="col-md-12">
+            <a href="/datos_masivos/"><span class="icon-cloud-upload fa"></span> Ingresar Datos Masivos</a><br>
+              </div>
+              <div class="col-md-12">
+            <a href="/dato_indiv/"><span class="icon-cloud-upload fa"></span> Ingresar Dato Individual</a>
+              </div>
+            {% endif %}
           </ul>
         </div>
       </div>
@@ -224,7 +226,7 @@
             </li>
           </ul>
         </div>
-      </div>       
+      </div>
     </div>
     <button id="mimin-mobile-menu-opener" class="animated rubberBand btn btn-circle btn-danger">
       <span class="fa fa-bars"></span>

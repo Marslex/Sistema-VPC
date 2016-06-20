@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from django.db.models import Avg, Max, Min
 import csv
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
 from django.core.urlresolvers import reverse
@@ -12,45 +13,37 @@ from django.shortcuts import render
 from django.shortcuts import render_to_response
 from gasolina.models import *
 from django.http import HttpResponseRedirect
-import cairo
-import pycha.bar
+
 
 
 
 # Create your views here.
 
 def registrarse(request):
-	retornar = "ingresar_dato_individual.html"
+	retornar = "registrarse.html"
 	mensaje = ""
 	mensajeError = ""
 	if request.method == 'POST':
 		form = RegistrarseForm(request.POST)
 		f = request.POST
 		if form.is_valid():
-			form = RegistrarseForm()
-			newUser= form.save()
-			newUser.username = f["username"]
-			newUser.password = f["password"]
-			newUser.nombreUsuario = f["nombreUsuario"]
-			newUser.apellidoUsuario = f["apellidoUsuario"]
-			newUser.save()
+			usuario = User.objects.create_user(username = f['username'], first_name = f['first_name'], last_name = f['last_name'], password = f['password'])
+			usuario.is_staff = True
+			usuario.is_active = True
+			usuario.is_superuser = True
+			usuario.email = "''"
+			usuario.save()
+			rol = Rol.objects.get(idRol = 2)
+			usuarioRol = Usuario(username = f['username'], nombreUsuario = f['first_name'], apellidoUsuario = f['last_name'], password = f['password'], idRol = rol)
+			usuarioRol.save()
+			mensaje = "Usuario creado exitosamente!"
+			return HttpResponseRedirect("consultar_variaciones/")
 		else:
 			form=RegistrarseForm()
 			mensajeError = "Error! Datos invalidos"
 	else:
 		form=RegistrarseForm()
-	return render_to_response("registrarse.html", dict(form = form))
-
-#def login(request):
-	#retornar = "login.html"
-	#if request.method == 'POST':
-	#	form = LoginForm(request.POST)
-	#	if form.is_valid:
-	#		u = request.POST
-	#		user = Usuario.objects.get(username=u["username"])
-	#else:
-	#	form = LoginForm()
-	#return render(request, retornar, {'form': form})
+	return render(request, retornar, {'form': form, 'mensaje': mensaje, 'mensajeError': mensajeError})
 
 def login(request):
 	mensaje = ""
@@ -79,12 +72,16 @@ def logout(request):
 #cada template en el caso de django framework tiene asignado una funcion
 @login_required
 def add_precio(request):
+	user = User.objects.get(username=request.user.username)
+	rol = Usuario.objects.get(username = user.username)
+	if rol.idRol.idRol == 2:
+		return HttpResponseRedirect("consultar_variaciones/")
+	retornar = "ingresar_dato_individual.html"
 	#obtiene la lista de productos que estan ingresados en la base de datos
 	#esta lista de productos seran enviados a la vista para desplegarse en forma de lista
 	producto_list = Producto.objects.all()
 	anho_list = Ano.objects.all()
 	#string que contiene la vista que se va a retorna para terminar la funcion en un solo return
-	retornar = "ingresar_dato_individual.html"
 	mensaje = ""
 	mensajeError = ""
 	if request.method == 'POST':
@@ -129,10 +126,12 @@ def add_precio(request):
 		#si la peticion de la vista no ha sido con un metodo POST ingresa a esta parte
 		#se asigna a form el formulacrio creado en models.py
 		form = PrecioCombustibleForm()
-	return render(request, retornar, {'form': form, 'producto_list': producto_list, 'mensaje': mensaje, 'anho_list': anho_list})
+	return render(request, retornar, {'rol': rol, 'form': form, 'producto_list': producto_list, 'mensaje': mensaje, 'anho_list': anho_list, 'user': user})
 
 @login_required
 def analisis(request):
+	user = User.objects.get(username=request.user.username)
+	rol = Usuario.objects.get(username = user.username)
 	retornar = "analisis_de_sensibilidad.html"
 	producto_list = Producto.objects.all()
 	#max_date = Periodo.objects.latest('finalPeriodo').finalPeriodo
@@ -157,19 +156,20 @@ def analisis(request):
 					precioAuxiliar = (((float(precioActual)*0.5) + sumaFormulario)*iva) + (float(precioActual)*0.5) + sumaFormulario
 					precioAnalisis.precioCombustible = "{:.2f}".format(precioAuxiliar)
 
-	return render(request, retornar, {'form': form, 'producto_list': producto_list, 'precioCombustible_list': precioCombustible_list, 'precioCombustibleHelp': precioCombustibleHelp})
+	return render(request, retornar, {'rol': rol, 'user': user, 'form': form, 'producto_list': producto_list, 'precioCombustible_list': precioCombustible_list, 'precioCombustibleHelp': precioCombustibleHelp})
 
 #maneja la vista consultar variaciones
 @login_required
 def consultar(request):
-	graf_DepvsPrec =graph_depaVSprecio()
-	graf_AnovsPrec =graph_AnoVSprecio()
+	user = User.objects.get(username=request.user.username)
+	rol = Usuario.objects.get(username = user.username)
 	retornar = "consultar_variaciones.html"
 	producto_list = Producto.objects.all()
 	anho_list = Ano.objects.all()
 	departamento_list = Departamento.objects.all()
 	precioCombustible_list = PrecioCombustible.objects.all()
 	auxiliar_list = ""
+	grafic_list = ""
 	idAuxiliar = 0
 	departamento = ""
 	producto = ""
@@ -190,39 +190,52 @@ def consultar(request):
 					try:
 						anho = Ano.objects.get(idAno = f["anho"])
 						auxiliar_list = PrecioCombustible.objects.filter(idProducto = producto, idAno = anho, idZona = departamento.idZona)
+						grafic_list = PrecioCombustible.objects.filter(idProducto = producto, idAno = anho, idZona = departamento.idZona)[:9]
 					except ObjectDoesNotExist:
 						auxiliar_list = PrecioCombustible.objects.filter(idProducto = producto, idZona = departamento.idZona)
+						grafic_list = PrecioCombustible.objects.filter(idProducto = producto, idZona = departamento.idZona)[:9]
 				except ObjectDoesNotExist:
 					try:
 						anho = Ano.objects.get(idAno = f["anho"])
 						auxiliar_list = PrecioCombustible.objects.filter(idAno = anho, idZona = departamento.idZona)
+						grafic_list = PrecioCombustible.objects.filter(idAno = anho, idZona = departamento.idZona)[:9]
 					except ObjectDoesNotExist:
 						auxiliar_list = PrecioCombustible.objects.filter(idZona = departamento.idZona)
+						grafic_list = PrecioCombustible.objects.filter(idZona = departamento.idZona)[:9]
 			except ObjectDoesNotExist:
 				try:
 					producto = Producto.objects.get(idProducto = f["producto"])
 					try:
 						anho = Ano.objects.get(idAno = f["anho"])
 						auxiliar_list = PrecioCombustible.objects.filter(idProducto = producto, idAno = anho)
+						grafic_list = PrecioCombustible.objects.filter(idProducto = producto, idAno = anho)[:9]
 						mensaje = "True"
 					except ObjectDoesNotExist:
 						auxiliar_list = PrecioCombustible.objects.filter(idProducto = producto)
+						grafic_list = PrecioCombustible.objects.filter(idProducto = producto)[:9]
 						mensaje = "True"
 				except ObjectDoesNotExist:
 					try:
 						anho = Ano.objects.get(idAno = f["anho"])
 						auxiliar_list = PrecioCombustible.objects.filter(idAno = anho)
+						#grafic_list = PrecioCombustible.objects.filter(idAno = anho).values('idMes').annotate(max_precio=Max('precioCombustible')).order_by('idMes')
+						grafic_list = PrecioCombustible.objects.filter(idAno = anho)[:9]
 						mensaje = "True"
 					except ObjectDoesNotExist:
 						mensajeError = "Seleccione un valor para filtrar!"
 						auxiliar_list = ""
-			mensajeExito = "Consulta realizada con exito!"
-	return render(request, retornar, {'grafica2':graf_DepvsPrec,'grafica1':graf_DepvsPrec,'form': form, 'producto_list': producto_list, 'precioCombustible_list': precioCombustible_list, 'anho_list': anho_list, 'departamento_list': departamento_list, 'auxiliar_list': auxiliar_list, 'departamento': departamento, 'mensaje': mensaje, 'mensajeError': mensajeError, 'mensajeExito': mensajeExito})
+			if mensajeError != "Seleccione un valor para filtrar!":
+				mensajeExito = "Consulta realizada con exito!"
+	return render(request, retornar, {'rol': rol, 'user': user, 'grafic_list': grafic_list,'form': form, 'producto_list': producto_list, 'precioCombustible_list': precioCombustible_list, 'anho_list': anho_list, 'departamento_list': departamento_list, 'auxiliar_list': auxiliar_list, 'departamento': departamento, 'mensaje': mensaje, 'mensajeError': mensajeError, 'mensajeExito': mensajeExito})
 
 #maneja la vista ingresar datos masivos
 @login_required
 def add_datos(request):
-	retornar = "ingresar_datos_masivos.html"
+	user = User.objects.get(username=request.user.username)
+	rol = Usuario.objects.get(username = user.username)
+	if rol.idRol.idRol == 2:
+		return HttpResponseRedirect("consultar_variaciones/")
+	retornar = "ingresar_dato_individual.html"
 	form = IngresarDatosForm()
 	precioCombustible_list = []
 	mensajeExito = ""
@@ -241,7 +254,7 @@ def add_datos(request):
 			c5 = ""
 			c6 = ""
 			c7 = ""
-			#zonaOriental = 1, zonaCentral = 2, zonaOriental = 3
+			#zonaOccidental = 1, zonaCentral = 2, zonaOriental = 3
 			#obtenemos las 3 zonas que seran asignadas en el precio
 			zona1 = Zona.objects.get(idZona = 1)
 			zona2 = Zona.objects.get(idZona = 2)
@@ -292,14 +305,15 @@ def add_datos(request):
 					mensajeError = "Ocurrio un error y los datos no fueron guardados!"
 					Error = "True"
 				try:
-					periodo = Periodo.objects.get(finalPeriodo = c4)
+					periodo = Periodo.objects.get(finalPeriodo = c4)[:1]
 				except Exception, e:
 					try:
 						periodo = Periodo(inicioPeriodo = c3, finalPeriodo = c4)
-						periodos_list.append(periodo)
+						periodo.save()
+						#periodos_list.append(periodo)
 					except Exception, e:
 						periodo = Periodo(inicioPeriodo = "0000-00-00", finalPeriodo = "0000-00-00")
-						mensajeError = "Ocurrio un error y los datos no fureron guardados!"
+						mensajeError = "Ocurrio un error y los datos no fueron guardados!"
 						Error = "True"
 				try:
 					precioZonaCentral = PrecioCombustible(idAno = anho, idProducto = producto, idZona = zona2, idMes = periodo, precioCombustible = c5)
@@ -321,124 +335,6 @@ def add_datos(request):
 					Error = "True"
 			if Error != "True":
 				mensajeExito = "Los datos fueron leidos y guardados exitosamente!"
-				for periodo in periodos_list:
-					periodo.save()
 				for precioCombustible in precioCombustible_list:
 					precioCombustible.save()
-	return render(request, retornar, {'form': form, 'mensajeExito': mensajeExito, 'mensajeError': mensajeError, 'precioCombustible_list': precioCombustible_list})
-
-#-------------------------------------------------------------------------------------------------------------------------------
-#----GRAFICAS:  PARA QUE LAS GRAFICAS FUNCIONEN HAY QUE INSTALAR:
-#---------------pip install pycha----------------------
-#---------------pip install IPython--------------------
-
-def graph_depaVSprecio():
-
-    # Ancho y alto de la gráfica
-    width, height = (550, 310)
-
-
-     # Superficie cairo
-    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-
-    # Tomamos los datos
-    data = [('UNO', 1),#aqui va el nombre en las X y el valor en las Y pero no se como hacer para que se llene con los datos consultados
-            ('DOS', 2),
-            ('Estrategia', 3),
-            ('Deporte', 4),
-            ('Acción', 5),
-            ('Puzzle', 6)]
-
-    # Los cargamos en el dataSet
-    dataSet = (
-        ('Precio', [(i, l[1]) for i, l in enumerate(data)]),
-    )
-
-    # Opciones de la gráfica
-    options = {
-        'legend': {'hide': False},
-        'axis': {
-            'x': {
-                'ticks': [dict(v=i, label=l[0]) for i, l in enumerate(data)],
-                'label': 'DEPARTAMENTO',#nombre del eje x
-            },
-            'y': {
-                'tickCount': 7,
-                'label': 'Número',#nombre del eje Y
-            }
-        },
-        'background': {
-            'chartColor': '#f3f9fb',
-            'lineColor': '#d1e5ec'
-        },
-        'colorScheme': {
-            'name': 'gradient',
-            'args': {
-                'initialColor': 'blue',#color de las barras
-            },
-        },
-    }
-
-    # Creamos la gráfica
-    chart = pycha.bar.VerticalBarChart(surface, options)
-    chart.addDataset(dataSet)
-    chart.render()
-
-    # La guardamos en un fichero .png
-    return surface.write_to_png('gasolina/static/img/chart.png')
-
-
-
-def graph_AnoVSprecio():
-    # Ancho y alto de la gráfica
-    width, height = (550, 310)
-
-
-     # Superficie cairo
-    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-
-    # Tomamos los datos
-    data = [('UNO', 1),
-            ('DOS', 2),
-            ('Estrategia', 3),
-            ('Deporte', 4),
-            ('Acción', 5),
-            ('Puzzle', 6)]
-
-    # Los cargamos en el dataSet
-    dataSet = (
-        ('Precio', [(i, l[1]) for i, l in enumerate(data)]),
-    )
-
-    # Opciones de la gráfica
-    options = {
-        'legend': {'hide': False},
-        'axis': {
-            'x': {
-                'ticks': [dict(v=i, label=l[0]) for i, l in enumerate(data)],
-                'label': 'DEPARTAMENTO',
-            },
-            'y': {
-                'tickCount': 7,
-                'label': 'Número',
-            }
-        },
-        'background': {
-            'chartColor': '#f3f9fb',
-            'lineColor': '#d1e5ec'
-        },
-        'colorScheme': {
-            'name': 'gradient',
-            'args': {
-                'initialColor': 'blue',
-            },
-        },
-    }
-
-    # Creamos la gráfica
-    chart = pycha.bar.VerticalBarChart(surface, options)
-    chart.addDataset(dataSet)
-    chart.render()
-
-    # La guardamos en un fichero .png
-    return surface.write_to_png('gasolina/static/img/chart2.png')
+	return render(request, retornar, {'rol': rol, 'user': user, 'form': form, 'mensajeExito': mensajeExito, 'mensajeError': mensajeError, 'precioCombustible_list': precioCombustible_list})

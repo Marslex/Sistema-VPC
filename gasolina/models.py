@@ -129,7 +129,6 @@ class PrecioCombustible(models.Model):
     idProducto              = models.ForeignKey(Producto)
     idZona                  = models.ForeignKey(Zona)
     idMes                   = models.ForeignKey(Periodo)
-    username                = models.ForeignKey(Usuario)
     precioCombustible       = models.DecimalField(max_digits=4, decimal_places=2)
 
     def __unicode__(self): # __unicode__ en Python 2
@@ -141,21 +140,6 @@ class PrecioCombustible(models.Model):
 #--------------------------FORMULARIOS------------------------------------------
 #-------------------------------------------------------------------------------
 
-
-class PrecioCombusForm(ModelForm):
-    class Meta:
-       model = PrecioCombustible
-       exclude=()
-
-class LoginForm(ModelForm):
-    class Meta:
-       model = Usuario
-       exclude=["idRol","nombreUsuario", "apellidoUsuario"]
-
-class RegistrarseForm(ModelForm):
-    class Meta:
-       model = Usuario
-       exclude=["idRol"]
 
 #formulario creado para ingresar datos individuales
 class PrecioCombustibleForm(forms.Form):
@@ -181,6 +165,12 @@ class AnalisisSensibilidadForm(forms.Form):
 
 class IngresarDatosForm(forms.Form):
     archivo = forms.FileField()
+
+class RegistrarseForm(forms.Form):
+    first_name = forms.CharField(max_length=20)
+    last_name = forms.CharField(max_length=20)
+    username = forms.CharField(max_length=20)
+    password = forms.CharField(max_length=128)
 
 class ConsultarVariacionesForm(forms.Form):
     anho = forms.DecimalField(max_digits=4, decimal_places=0, required=False)

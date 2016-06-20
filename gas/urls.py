@@ -21,17 +21,21 @@ from django.contrib.auth.views import login, logout
 from django.contrib import admin
 admin.autodiscover()
 
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/login/$', login),
     url(r'^logout/$', logout),
     url(r'^login/$', login, name="login"),
     url(r'^accounts/profile/', consultar, name="consultar"),
-    url(r'^dato_indiv/$',add_precio, name='padd'),
-    url(r'^$', login, name='login'),
     url(r'^registrarse/$', registrarse, name='registrarse'),
+    url(r'^dato_indiv/$',add_precio, name='padd'),
+    url(r'^dato_indiv/consultar_variaciones',consultar, name='consultar'),
+    url(r'^$', login, name='login'),
     url(r'^analisis/$', analisis),
     url(r'^consultar_variaciones/$', consultar),
+    url(r'^registrarse/consultar_variaciones/$', consultar),
+    url(r'^datos_masivos/consultar_variaciones', consultar),
     url(r'^datos_masivos/$', add_datos)
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

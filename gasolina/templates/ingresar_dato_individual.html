@@ -43,12 +43,12 @@
               <span class="middle"></span>
               <span class="bottom"></span>
             </div>
-              <a href="index.html" class="navbar-brand">
+              <a href="/consultar_variaciones" class="navbar-brand">
                <b>VPC - Variación del precio de los combustibles</b>
               </a>
 
             <ul class="nav navbar-nav navbar-right user-nav">
-              <li class="user-name"><span>Omar Garcia</span></li>
+              <li class="user-name"><span>{{ user.username }}</span></li>
               <li class="dropdown avatar-dropdown">
                 <img src="{% static 'img/avatar.jpg' %}" class="img-circle avatar" alt="user name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"/>
                 <ul class="dropdown-menu user-dropdown">
@@ -77,17 +77,19 @@
                 <p class="animated fadeInRight">Sat,October 1st 2029</p>
               </li>
               <div class="col-md-12">
-            <a href="/consultar_variaciones/"><span class="icon-chart fa"></span> Consultar Varciaciones</a><br>
+            <a href="/consultar_variaciones/"><span class="icon-chart fa"></span> Consultar Variaciones</a><br>
               </div>
               <div class="col-md-12">
             <a href="/analisis/"><span class="icon-eye fa"></span> Analisis de Sensibilidad</a><br>
               </div>
+              {% if rol.idRol.idRol == 1 %}
               <div class="col-md-12">
             <a href="/datos_masivos/"><span class="icon-cloud-upload fa"></span> Ingresar Datos Masivos</a><br>
               </div>
               <div class="col-md-12">
             <a href="/dato_indiv/"><span class="icon-cloud-upload fa"></span> Ingresar Dato Individual</a>
               </div>
+              {% endif %}
             </ul>
           </div>
         </div>
@@ -156,8 +158,8 @@
                         <div class="form-group col-md-12">
                           <label class="col-sm-4 control-label text-right">Periodo</label>
                           <div class="col-md-8">
-                            <input type="date" name="inicioPeriodo" placeholder="inicio del periodo" min="2016-01-01" max="2016-12-31" required>
-                            <input type="date" name="finalPeriodo" placeholder="final del periodo" min="2016-01-01" max="2016-12-31" required>
+                            <input type="date" name="inicioPeriodo" placeholder="inicio del periodo" required>
+                            <input type="date" name="finalPeriodo" placeholder="final del periodo" required>
                           </div>
                         </div>
                         </div>
@@ -170,7 +172,7 @@
                             <div class="panel-body" style="padding-bottom:30px;">
                               <div class="form-group"><label class="col-sm-5 control-label text-right">Occidental</label>
                                 <div class="col-sm-7"><input type="text" class="form-control" placeholder="Precio" name="zonaOccidental" required></div>
-                              </div> 
+                              </div>
                               <div class="form-group"><label class="col-sm-5 control-label text-right">Central</label>
                                 <div class="col-sm-7"><input type="text" class="form-control" placeholder="Precio" name="zonaCentral" required></div>
                               </div>
@@ -261,7 +263,7 @@
         });
 
         $(".select2-A").select2({
-          placeholder: "Seleccione un mes",
+          placeholder: "Seleccione un año",
           allowClear: true
         });
 
