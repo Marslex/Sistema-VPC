@@ -79,8 +79,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'VPC_HDP',
-        'USER': 'omar',
-        'PASWORD': 'omar12345',
+        'USER': 'hdp17',
+        'PASWORD': 'bryan2422',
     }
 }
 

@@ -37,7 +37,7 @@
                   {% if mensaje %}
                     <br><p style="color: #ee0700"><b>{{ mensaje }}</b></p>
                   {% endif %}
-                  <form action="http://localhost:8000/consultar_variaciones/" method="POST">
+                  <form action="/consultar_variaciones/" method="POST">
                   {% csrf_token %}
                     <div class="form-group form-animate-text" style="margin-top:40px !important;">
                       <input type="text" class="form-text" name="username" required>

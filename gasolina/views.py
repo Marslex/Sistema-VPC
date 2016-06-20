@@ -234,8 +234,8 @@ def add_datos(request):
 	user = User.objects.get(username=request.user.username)
 	rol = Usuario.objects.get(username = user.username)
 	if rol.idRol.idRol == 2:
-		return HttpResponseRedirect("consultar_variaciones/")
-	retornar = "ingresar_dato_individual.html"
+		return HttpResponseRedirect("consultar	_variaciones/")
+	retornar = "ingresar_datos_masivos.html"
 	form = IngresarDatosForm()
 	precioCombustible_list = []
 	mensajeExito = ""
